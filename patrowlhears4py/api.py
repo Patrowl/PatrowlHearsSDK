@@ -228,7 +228,7 @@ class PatrowlHearsApi:
                 data.update({'references': vuln['references']})
 
         try:
-            return self.rs.post(self.url+"/api/vulns/add", data).json()
+            return self.rs.post(self.url+"/api/vulns/add", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to add vuln: {}".format(e))
 
@@ -309,7 +309,7 @@ class PatrowlHearsApi:
             'vendor_name': vendor_name
         }
         try:
-            return self.rs.post(self.url+"/api/monitor/vendor/toggle", data).json()
+            return self.rs.post(self.url+"/api/monitor/vendor/toggle", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vendor monitoring status: {}".format(e))
 
@@ -331,7 +331,7 @@ class PatrowlHearsApi:
             'product_name': product_name
         }
         try:
-            return self.rs.post(self.url+"/api/monitor/product/toggle", data).json()
+            return self.rs.post(self.url+"/api/monitor/product/toggle", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle product monitoring status: {}".format(e))
 
@@ -350,7 +350,7 @@ class PatrowlHearsApi:
             'package_id': package_id
         }
         try:
-            return self.rs.post(self.url+"/api/monitor/package/toggle", data).json()
+            return self.rs.post(self.url+"/api/monitor/package/toggle", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vendor monitoring status: {}".format(e))
 
@@ -369,7 +369,7 @@ class PatrowlHearsApi:
             'vuln_id': vuln_id
         }
         try:
-            return self.rs.post(self.url+"/api/vulns/{}/toggle".format(vuln_id), data).json()
+            return self.rs.post(self.url+"/api/vulns/{}/toggle".format(vuln_id), json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vuln monitoring status: {}".format(e))
 
@@ -465,7 +465,7 @@ class PatrowlHearsApi:
                 data.update({'maturity': exploit['maturity']})
 
         try:
-            return self.rs.post(self.url+"/api/data/submit", data).json()
+            return self.rs.post(self.url+"/api/data/submit", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve data: {}".format(e))
 
