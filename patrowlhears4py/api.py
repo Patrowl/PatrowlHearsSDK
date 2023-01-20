@@ -313,7 +313,7 @@ class PatrowlHearsApi:
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vendor monitoring status: {}".format(e))
 
-    def toggle_product_monitoring(self, organization_id, vendor_name, product_name, monitored):
+    def toggle_product_monitoring(self, product_id, organization_id, vendor_name, product_name, monitored):
         """
         Toggle monitoring status of a product by his name.
 
@@ -324,6 +324,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         data = {
+            'product_id': product_id,
             'monitored': monitored is True,
             'organization_id': organization_id,
             'vendor_name': vendor_name,
