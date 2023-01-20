@@ -524,9 +524,9 @@ class PatrowlHearsApi:
             params += "&monitored=true"
 
         try:
-            return self.rs.get(self.url+"/api/kb/vendors/{}".format(params)).json()
+            return self.rs.get(self.url+"/api/kb/products/{}".format(params)).json()
         except requests.exceptions.RequestException as e:
-            raise PatrowlHearsException("Unable to list vendors: {}".format(e))
+            raise PatrowlHearsException("Unable to list products: {}".format(e))
 
     def get_packages(self, type=None, name=None, monitored=False, page=1, limit=10):
         """
