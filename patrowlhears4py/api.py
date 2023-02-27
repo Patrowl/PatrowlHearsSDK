@@ -112,7 +112,7 @@ class PatrowlHearsApi:
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln stats: {}".format(e))
 
-    def search_vulns(self, cveid=None, monitored=None, search=None, vendor_name=None, product_name=None, product_version=None, cpe=None, page=1, limit=10):
+    def search_vulns(self, cveid=None, monitored=None, search=None, vendor_name=None, product_name=None, product_version=None, cpe=None, score=None, updated_since=None, sorted_by=None, page=1, limit=10):
         """
         Get vulnerabilities from criterias.
 
@@ -142,6 +142,26 @@ class PatrowlHearsApi:
             filters += "&product_version={}".format(str(product_version).lower())
         if cpe is not None and cpe != '':
             filters += "&cpe={}".format(str(cpe).lower())
+        if score is not None and score != '':
+            filters += "&score__gte={}".format(score)
+        if updated_since is not None and updated_since != '':
+            filters += "&updated_at__gte={}".format(updated_since)
+        if sorted_by is not None and sorted_by in [
+            'id', '-id',
+            'cveid', '-cveid',
+            'cvss', '-cvss',
+            'cvss3', '-cvss3',
+            'score', '-score',
+            'exploit_count', '-exploit_count',
+            'summary', '-summary',
+            'monitored', '-monitore',
+            'published', '-published',
+            'updated_at', '-updated_at',
+            'is_exploitable', '-is_exploitable',
+            'is_in_the_news', '-is_in_the_news',
+            'is_confirmed', '-is_confirmed'
+        ]:
+            filters += "&sorted_by={}".format(str(sorted_by).lower())
 
         try:
             return self.rs.get(self.url + "/api/vulns/{}".format(filters)).json()
