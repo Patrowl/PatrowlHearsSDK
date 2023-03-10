@@ -61,7 +61,7 @@ class PatrowlHearsApi:
         try:
             r = requests.Request(
                 method=method.upper(),
-                url=self.url+url,
+                url=self.url + url,
                 data=data,
                 params=params,
                 headers={
@@ -85,7 +85,7 @@ class PatrowlHearsApi:
         params = "?page={}&limit={}".format(page, limit)
 
         try:
-            return self.rs.get(self.url+"/api/orgs/{}".format(params)).json()
+            return self.rs.get(self.url + "/api/orgs/{}".format(params)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to list orgs: {}".format(e))
 
@@ -97,7 +97,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/latest").json()
+            return self.rs.get(self.url + "/api/vulns/latest").json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln: {}".format(e))
 
@@ -108,11 +108,11 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/stats").json()
+            return self.rs.get(self.url + "/api/vulns/stats").json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln stats: {}".format(e))
 
-    def search_vulns(self, cveid=None, monitored=None, search=None, vendor_name=None, product_name=None, product_version=None, cpe=None, page=1, limit=10):
+    def search_vulns(self, cveid=None, monitored=None, search=None, vendor_name=None, product_name=None, product_version=None, cpe=None, score=None, updated_since=None, sorted_by=None, page=1, limit=10):
         """
         Get vulnerabilities from criterias.
 
@@ -142,9 +142,29 @@ class PatrowlHearsApi:
             filters += "&product_version={}".format(str(product_version).lower())
         if cpe is not None and cpe != '':
             filters += "&cpe={}".format(str(cpe).lower())
+        if score is not None and score != '':
+            filters += "&score__gte={}".format(score)
+        if updated_since is not None and updated_since != '':
+            filters += "&updated_at__gte={}".format(updated_since)
+        if sorted_by is not None and sorted_by in [
+            'id', '-id',
+            'cveid', '-cveid',
+            'cvss', '-cvss',
+            'cvss3', '-cvss3',
+            'score', '-score',
+            'exploit_count', '-exploit_count',
+            'summary', '-summary',
+            'monitored', '-monitore',
+            'published', '-published',
+            'updated_at', '-updated_at',
+            'is_exploitable', '-is_exploitable',
+            'is_in_the_news', '-is_in_the_news',
+            'is_confirmed', '-is_confirmed'
+        ]:
+            filters += "&sorted_by={}".format(str(sorted_by).lower())
 
         try:
-            return self.rs.get(self.url+"/api/vulns/{}".format(filters)).json()
+            return self.rs.get(self.url + "/api/vulns/{}".format(filters)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln: {}".format(e))
 
@@ -228,7 +248,7 @@ class PatrowlHearsApi:
                 data.update({'references': vuln['references']})
 
         try:
-            return self.rs.post(self.url+"/api/vulns/add", data).json()
+            return self.rs.post(self.url + "/api/vulns/add", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to add vuln: {}".format(e))
 
@@ -240,7 +260,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/{}".format(vuln_id)).json()
+            return self.rs.get(self.url + "/api/vulns/{}".format(vuln_id)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln: {}".format(e))
 
@@ -252,7 +272,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/{}/exploits".format(vuln_id)).json()
+            return self.rs.get(self.url + "/api/vulns/{}/exploits".format(vuln_id)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln exploits: {}".format(e))
 
@@ -278,7 +298,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/{}/threats".format(vuln_id)).json()
+            return self.rs.get(self.url + "/api/vulns/{}/threats".format(vuln_id)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve vuln threats: {}".format(e))
 
@@ -290,7 +310,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/{}/history".format(vuln_id)).json()
+            return self.rs.get(self.url + "/api/vulns/{}/history".format(vuln_id)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to get vuln history: {}".format(e))
 
@@ -309,11 +329,11 @@ class PatrowlHearsApi:
             'vendor_name': vendor_name
         }
         try:
-            return self.rs.post(self.url+"/api/monitor/vendor/toggle", data).json()
+            return self.rs.post(self.url + "/api/monitor/vendor/toggle", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vendor monitoring status: {}".format(e))
 
-    def toggle_product_monitoring(self, organization_id, vendor_name, product_name, monitored):
+    def toggle_product_monitoring(self, product_id, organization_id, vendor_name, product_name, monitored):
         """
         Toggle monitoring status of a product by his name.
 
@@ -324,13 +344,14 @@ class PatrowlHearsApi:
         :rtype: json
         """
         data = {
+            'product_id': product_id,
             'monitored': monitored is True,
             'organization_id': organization_id,
             'vendor_name': vendor_name,
             'product_name': product_name
         }
         try:
-            return self.rs.post(self.url+"/api/monitor/product/toggle", data).json()
+            return self.rs.post(self.url + "/api/monitor/product/toggle", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle product monitoring status: {}".format(e))
 
@@ -349,7 +370,7 @@ class PatrowlHearsApi:
             'package_id': package_id
         }
         try:
-            return self.rs.post(self.url+"/api/monitor/package/toggle", data).json()
+            return self.rs.post(self.url + "/api/monitor/package/toggle", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vendor monitoring status: {}".format(e))
 
@@ -368,7 +389,7 @@ class PatrowlHearsApi:
             'vuln_id': vuln_id
         }
         try:
-            return self.rs.post(self.url+"/api/vulns/{}/toggle".format(vuln_id), data).json()
+            return self.rs.post(self.url + "/api/vulns/{}/toggle".format(vuln_id), json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to toggle vuln monitoring status: {}".format(e))
 
@@ -380,7 +401,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/{}/refresh_score".format(vuln_id)).json()
+            return self.rs.get(self.url + "/api/vulns/{}/refresh_score".format(vuln_id)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to refresh vuln score: {}".format(e))
 
@@ -392,7 +413,7 @@ class PatrowlHearsApi:
         :param to: Search data to date (format: YYYY-MM-DD). Optional.
         :rtype: json
         """
-        url = self.url+"/api/data/export/info?"
+        url = self.url + "/api/data/export/info?"
         if since is not None:
             url = "{}&since={}".format(url, since)
         if to is not None:
@@ -411,7 +432,7 @@ class PatrowlHearsApi:
         :param limit: Limit rows per table. Optional.
         :rtype: json
         """
-        url = self.url+"/api/data/export/full?"
+        url = self.url + "/api/data/export/full?"
         if since is not None:
             url = "{}&since={}".format(url, since)
         if to is not None:
@@ -464,7 +485,7 @@ class PatrowlHearsApi:
                 data.update({'maturity': exploit['maturity']})
 
         try:
-            return self.rs.post(self.url+"/api/data/submit", data).json()
+            return self.rs.post(self.url + "/api/data/submit", json=data).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to retrieve data: {}".format(e))
 
@@ -477,7 +498,7 @@ class PatrowlHearsApi:
         :rtype: json
         """
         try:
-            return self.rs.get(self.url+"/api/vulns/{}/exploits/{}/del".format(vuln_id, exploit_id)).json()
+            return self.rs.get(self.url + "/api/vulns/{}/exploits/{}/del".format(vuln_id, exploit_id)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to delete exploit: {}".format(e))
 
@@ -499,7 +520,7 @@ class PatrowlHearsApi:
             params += "&monitored=true"
 
         try:
-            return self.rs.get(self.url+"/api/kb/vendors/{}".format(params)).json()
+            return self.rs.get(self.url + "/api/kb/vendors/{}".format(params)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to list vendors: {}".format(e))
 
@@ -523,9 +544,9 @@ class PatrowlHearsApi:
             params += "&monitored=true"
 
         try:
-            return self.rs.get(self.url+"/api/kb/vendors/{}".format(params)).json()
+            return self.rs.get(self.url + "/api/kb/products/{}".format(params)).json()
         except requests.exceptions.RequestException as e:
-            raise PatrowlHearsException("Unable to list vendors: {}".format(e))
+            raise PatrowlHearsException("Unable to list products: {}".format(e))
 
     def get_packages(self, type=None, name=None, monitored=False, page=1, limit=10):
         """
@@ -547,6 +568,6 @@ class PatrowlHearsApi:
             params += "&monitored=true"
 
         try:
-            return self.rs.get(self.url+"/api/kb/packages/{}".format(params)).json()
+            return self.rs.get(self.url + "/api/kb/packages/{}".format(params)).json()
         except requests.exceptions.RequestException as e:
             raise PatrowlHearsException("Unable to list packages: {}".format(e))
